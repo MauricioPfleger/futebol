@@ -4,21 +4,15 @@ using System.Net;
 
 namespace futebol.Controllers
 {
-    [ApiController]
-    [Route("[controller]")]
-    public class TesteController : ControllerBase
+    [ApiController] // É uma tag que diz para o visual studio que essa classe é uma API
+    [Route("[controller]")] // O nome da nossa Controller ou API vai ser o nome da classe meno a palavra Controller
+    public class TesteController : ControllerBase // Qualquer Controller sempre vai herdar de uma ControllerBase
     {
-
-        public TesteController()
+        [HttpGet("olamundo")] // Consulta e o nome do endpoint entre parenteses
+        [ProducesResponseType(typeof(Ok), (int)HttpStatusCode.OK)] // Tipo de reposta produzido, podendo ser definido OK ou Erro
+        public IActionResult ConsultarTutor() // Método que irá realizar o que queremos
         {
-        }
-
-        [HttpGet("v1/teste")]
-        [ProducesResponseType(typeof(Ok), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(BadRequestResult), (int)HttpStatusCode.BadRequest)]
-        public IActionResult ConsultarTutor()
-        {
-            return Ok("Teste");
+            return Ok($@"Olá Mundo!!!"); // Retorna alguma informação com sucesso, lembrando que Ok é sucesso.
         }
     }
 }

@@ -47,3 +47,4 @@
 /obj/project.nuget.cache
 /.vs/futebol/FileContentIndex/dd638eab-d666-4352-ab2f-a32c3c22286a.vsidx
 /.vs/futebol/FileContentIndex/*.vsidx
+/obj/Debug/net7.0/futebol.sourcelink.json
