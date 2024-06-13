@@ -20,13 +20,13 @@ namespace futebol.Controllers
         [HttpGet("clube")]
         [ProducesResponseType(typeof(Ok), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BadRequest), (int)HttpStatusCode.BadRequest)]
-        public IActionResult ConsultaClube() 
+        public IActionResult ConsultaClube([FromQuery] string nomeClube) 
         {
             string connectionString = "Server=localhost;Port=3306;Database=sys;Uid=root;Pwd=admin;";
 
             MySqlConnection connection = new MySqlConnection(connectionString);
 
-            string query = "SELECT nome FROM sys.clubes WHERE id = 2";
+            string query = $"SELECT id, nome, trofeus FROM sys.clubes WHERE nome = '{nomeClube}'";
 
             MySqlCommand command = new MySqlCommand(query, connection);
             
@@ -37,12 +37,14 @@ namespace futebol.Controllers
             if (reader.Read())
             {
                 string clube = reader.GetString("nome");
+                int id = reader.GetInt32("id");
+                int trofeus = reader.GetInt32("trofeus");
                 connection.Close();
-                return Ok(clube);
+                return Ok(trofeus);
             }
             else {
                 connection.Close();
-                return BadRequest("Erro");
+                return BadRequest("Clube não encontrado");
             }
         }
     }
