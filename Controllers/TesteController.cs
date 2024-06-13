@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System.Net;
 using MySql.Data.MySqlClient;
+using futebol.Objetos;
+using System.Data;
 
 namespace futebol.Controllers
 {
@@ -26,7 +28,7 @@ namespace futebol.Controllers
 
             MySqlConnection connection = new MySqlConnection(connectionString);
 
-            string query = $"SELECT id, nome, trofeus FROM sys.clubes WHERE nome = '{nomeClube}'";
+            string query = $"SELECT id, nome, trofeus, patrimonio FROM sys.clubes WHERE nome = '{nomeClube}'";
 
             MySqlCommand command = new MySqlCommand(query, connection);
             
@@ -36,11 +38,15 @@ namespace futebol.Controllers
 
             if (reader.Read())
             {
-                string clube = reader.GetString("nome");
-                int id = reader.GetInt32("id");
-                int trofeus = reader.GetInt32("trofeus");
+                var clube = new Clube();
+                clube.Id = reader.GetInt32("id"); ;
+                clube.Nome = reader.GetString("nome"); ;
+                clube.Trofeus = reader.GetInt32("trofeus");
+                if (!reader.IsDBNull("patrimonio"))
+                    clube.Patrimonio = reader.GetDouble("patrimonio");
+
                 connection.Close();
-                return Ok(trofeus);
+                return Ok(clube);
             }
             else {
                 connection.Close();
