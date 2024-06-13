@@ -5,6 +5,7 @@ using System.Net;
 using MySql.Data.MySqlClient;
 using futebol.Objetos;
 using System.Data;
+using System.Diagnostics.Eventing.Reader;
 
 namespace futebol.Controllers
 {
@@ -22,13 +23,20 @@ namespace futebol.Controllers
         [HttpGet("clube")]
         [ProducesResponseType(typeof(Ok), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BadRequest), (int)HttpStatusCode.BadRequest)]
-        public IActionResult ConsultaClube([FromQuery] string nomeClube) 
+        public IActionResult ConsultaClube([FromQuery] string nomeClube, [FromQuery] int valor) 
         {
             string connectionString = "Server=localhost;Port=3306;Database=sys;Uid=root;Pwd=admin;";
 
             MySqlConnection connection = new MySqlConnection(connectionString);
 
-            string query = $"SELECT id, nome, trofeus, patrimonio FROM sys.clubes WHERE nome = '{nomeClube}'";
+            string query = String.Empty;
+
+            if (String.IsNullOrEmpty(nomeClube)) {
+                // a query deve buscar pelo id
+            }
+            else {
+                query = $"SELECT id, nome, trofeus, patrimonio FROM sys.clubes WHERE nome = '{nomeClube}'";
+            }            
 
             MySqlCommand command = new MySqlCommand(query, connection);
             
