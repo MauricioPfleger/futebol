@@ -24,7 +24,7 @@ namespace futebol.Controllers
         [HttpGet("clube")]
         [ProducesResponseType(typeof(Ok), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BadRequest), (int)HttpStatusCode.BadRequest)]
-        public IActionResult ConsultaClube([FromQuery] string? nomeClube, [FromQuery] int? idClube) 
+        public IActionResult ConsultaClube([FromQuery] string? nomeClube, [FromQuery] int? idClube)
         {
             string connectionString = "Server=localhost;Port=3306;Database=sys;Uid=root;Pwd=admin;";
 
@@ -32,15 +32,17 @@ namespace futebol.Controllers
 
             string query = String.Empty;
 
-            if (String.IsNullOrEmpty(nomeClube)) {
+            if (String.IsNullOrEmpty(nomeClube))
+            {
                 query = $"SELECT id, nome, trofeus, patrimonio FROM sys.clubes WHERE id = '{idClube}'";
             }
-            else {
+            else
+            {
                 query = $"SELECT id, nome, trofeus, patrimonio FROM sys.clubes WHERE nome = '{nomeClube}'";
-            }            
+            }
 
             MySqlCommand command = new MySqlCommand(query, connection);
-            
+
             connection.Open();
 
             MySqlDataReader reader = command.ExecuteReader();
@@ -57,9 +59,58 @@ namespace futebol.Controllers
                 connection.Close();
                 return Ok(clube);
             }
-            else {
+            else
+            {
                 connection.Close();
                 return BadRequest("Clube não encontrado");
+            }
+        }
+
+        [HttpGet("jogadores")]
+        [ProducesResponseType(typeof(Ok), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BadRequest), (int)HttpStatusCode.BadRequest)]
+        public IActionResult ConsultaJogador([FromQuery] string? nomeJogador, [FromQuery] int? idJogador)
+        {
+            string connectionString = "Server=localhost;Port=3306;Database=sys;Uid=root;Pwd=admin;";
+
+            MySqlConnection connection = new MySqlConnection(connectionString);
+
+            string query = String.Empty;
+
+            if (String.IsNullOrEmpty(nomeJogador))
+            {
+                query = $@"SELECT j.id, j.nome, j.numero, j.salario, c.nome nome_clube FROM sys.jogadores j
+                    JOIN sys.clubes c on c.id = j.idclube
+                    WHERE j.id = {idJogador}";
+            }
+            else
+            {
+                query = $@"SELECT j.id, j.nome, j.numero, j.salario, c.nome nome_clube FROM sys.jogadores j
+                    JOIN sys.clubes c on c.id = j.idclube 
+                    WHERE j.nome = '{nomeJogador}'";
+            }
+
+            MySqlCommand command = new MySqlCommand(query, connection);
+
+            connection.Open();
+
+            MySqlDataReader reader = command.ExecuteReader();
+
+            if (reader.Read())
+            {
+                var jogador = new Jogador();
+                jogador.Id = reader.GetInt32("id"); ;
+                jogador.Nome = reader.GetString("nome");
+                jogador.Numero = reader.GetInt32("numero");
+                jogador.Salario = reader.GetDecimal("salario");
+                jogador.NomeClube = reader.GetString("nome_clube");
+                connection.Close();
+                return Ok(jogador);
+            }
+            else
+            {
+                connection.Close();
+                return BadRequest("Jogador não encontrado");
             }
         }
     }
