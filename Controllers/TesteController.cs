@@ -7,6 +7,7 @@ using futebol.Objetos;
 using System.Data;
 using System.Diagnostics.Eventing.Reader;
 using System.Runtime.InteropServices;
+using Org.BouncyCastle.Crypto.Digests;
 
 namespace futebol.Controllers
 {
@@ -124,7 +125,7 @@ namespace futebol.Controllers
             MySqlConnection connection = new MySqlConnection(connectionString);
 
             string query = $@"SELECT j.nome, j.numero FROM sys.jogadores j
-                WHERE j.salario = SECT max(x.salario) FROM sys.jogadores x";
+                WHERE j.salario = (SELECT max(x.salario) FROM sys.jogadores x)";
 
             MySqlCommand command = new MySqlCommand(query, connection);
 
@@ -135,6 +136,8 @@ namespace futebol.Controllers
             if (reader.Read())
             {
                 var jogadorMaiorSalario = new MaiorSalario();
+                jogadorMaiorSalario.Nome = reader.GetString("nome");
+                jogadorMaiorSalario.Numero = reader.GetInt32("numero");
                 // Adicionar apenas as informações que retornarão da API
 
                 connection.Close();
@@ -144,6 +147,38 @@ namespace futebol.Controllers
             {
                 connection.Close();
                 return BadRequest("Jogador não encontrado");
+            }
+        }
+
+        [HttpPost("clube")]
+        [ProducesResponseType(typeof(Ok), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BadRequest), (int)HttpStatusCode.BadRequest)]
+        public IActionResult InserirClube([FromBody] ClubeRequest clubeRequest)
+        {
+            string connectionString = "Server=localhost;Port=3306;Database=sys;Uid=root;Pwd=admin;";
+
+            MySqlConnection connection = new MySqlConnection(connectionString);
+
+            string query = $@"INSERT INTO sys.clubes (nome, trofeus, patrimonio) VALUES (@nome, @troufeus, @patrimonio)";
+
+            MySqlCommand command = new MySqlCommand(query, connection);
+            command.Parameters.AddWithValue("@nome", clubeRequest.Nome);
+            command.Parameters.AddWithValue("@troufeus", clubeRequest.Troufeus);
+            command.Parameters.AddWithValue("@patrimonio", clubeRequest.Patrimonio.ToString().Replace(',', '.'));               
+
+            connection.Open();
+
+            var linhasAfetas = command.ExecuteNonQuery();
+
+            if (linhasAfetas > 0)
+            {
+                connection.Close();
+                return Ok("Clube cadastrado com sucesso.");
+            }
+            else
+            {
+                connection.Close();
+                return BadRequest("Clube não foi cadastrado");
             }
         }
     }
