@@ -113,5 +113,38 @@ namespace futebol.Controllers
                 return BadRequest("Jogador não encontrado");
             }
         }
+
+        [HttpGet("maior-salario")]
+        [ProducesResponseType(typeof(Ok), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BadRequest), (int)HttpStatusCode.BadRequest)]
+        public IActionResult MaiorSalario()
+        {
+            string connectionString = "Server=localhost;Port=3306;Database=sys;Uid=root;Pwd=admin;";
+
+            MySqlConnection connection = new MySqlConnection(connectionString);
+
+            string query = $@"SELECT j.nome, j.numero FROM sys.jogadores j
+                WHERE j.salario = SECT max(x.salario) FROM sys.jogadores x";
+
+            MySqlCommand command = new MySqlCommand(query, connection);
+
+            connection.Open();
+
+            MySqlDataReader reader = command.ExecuteReader();
+
+            if (reader.Read())
+            {
+                var jogadorMaiorSalario = new MaiorSalario();
+                // Adicionar apenas as informações que retornarão da API
+
+                connection.Close();
+                return Ok(jogadorMaiorSalario);
+            }
+            else
+            {
+                connection.Close();
+                return BadRequest("Jogador não encontrado");
+            }
+        }
     }
 }
