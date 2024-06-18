@@ -138,7 +138,6 @@ namespace futebol.Controllers
                 var jogadorMaiorSalario = new MaiorSalario();
                 jogadorMaiorSalario.Nome = reader.GetString("nome");
                 jogadorMaiorSalario.Numero = reader.GetInt32("numero");
-                // Adicionar apenas as informações que retornarão da API
 
                 connection.Close();
                 return Ok(jogadorMaiorSalario);
@@ -155,15 +154,21 @@ namespace futebol.Controllers
         [ProducesResponseType(typeof(BadRequest), (int)HttpStatusCode.BadRequest)]
         public IActionResult InserirClube([FromBody] ClubeRequest clubeRequest)
         {
+            if (String.IsNullOrEmpty(clubeRequest.Nome))
+                return BadRequest("É necessário informar o nome do clube.");
+
+            if (clubeRequest.Trofeus == null)
+                return BadRequest("É necessário informar a quantidade de troféus.");
+
             string connectionString = "Server=localhost;Port=3306;Database=sys;Uid=root;Pwd=admin;";
 
             MySqlConnection connection = new MySqlConnection(connectionString);
 
             string query = $@"INSERT INTO sys.clubes (nome, trofeus, patrimonio) VALUES (@nome, @troufeus, @patrimonio)";
 
-            MySqlCommand command = new MySqlCommand(query, connection);
+            MySqlCommand command = new MySqlCommand(query, connection); 
             command.Parameters.AddWithValue("@nome", clubeRequest.Nome);
-            command.Parameters.AddWithValue("@troufeus", clubeRequest.Troufeus);
+            command.Parameters.AddWithValue("@troufeus", clubeRequest.Trofeus);
             command.Parameters.AddWithValue("@patrimonio", clubeRequest.Patrimonio.ToString().Replace(',', '.'));               
 
             connection.Open();
