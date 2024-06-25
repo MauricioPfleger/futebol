@@ -10,6 +10,7 @@ using System.Runtime.InteropServices;
 using Org.BouncyCastle.Crypto.Digests;
 using Mysqlx.Crud;
 using System.Collections.Generic;
+using System.Text;
 
 namespace futebol.Controllers
 {
@@ -192,18 +193,55 @@ namespace futebol.Controllers
         [HttpPut("clube/{idClube}")]
         [ProducesResponseType(typeof(Ok), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BadRequest), (int)HttpStatusCode.BadRequest)]
-        public IActionResult AlterarClube([FromRoute] int idClube, [FromQuery] int quantidadeTrofeus, colocar aqui um parametro novo referente ao patrimonio do clube)
+        public IActionResult AlterarClube([FromRoute] int idClube, [FromQuery] string? nomeClube, int? quantidadeTrofeus, decimal? patrimonio)
         {
             string connectionString = "Server=localhost;Port=3306;Database=sys;Uid=root;Pwd=admin;";
 
             MySqlConnection connection = new MySqlConnection(connectionString);
 
-            string query = "UPDATE CLUBES SET TROFEUS = @quantidadeTrofeus, aqui deve ser feito a atribuição do patrimonio WHERE ID = @idClube";
+            StringBuilder query = new StringBuilder();
+            query.Append("UPDATE CLUBES SET ");
 
-            MySqlCommand command = new MySqlCommand(query, connection);
+            bool existeParametroInformado = false;
+
+            if (!String.IsNullOrEmpty(nomeClube))
+            {
+                query.Append("NOME = @nomeClube");
+                existeParametroInformado = true;
+            }
+
+            if (quantidadeTrofeus != null)
+            {
+                if (existeParametroInformado)
+                {
+                    query.Append(",");
+                }
+                query.Append("TROFEUS = @quantidadeTrofeus");
+                existeParametroInformado = true;
+            }
+
+            if (patrimonio != null)
+            {
+                if (existeParametroInformado)
+                {
+                    query.Append(",");
+                }
+                query.Append("PATRIMONIO = @patrimonio");
+                existeParametroInformado = true;
+            }
+
+            if (!existeParametroInformado)
+            {
+                return BadRequest("Nenhum parâmetro foi informado");
+            }
+            
+            query.Append(" WHERE ID = @idClube");
+
+            MySqlCommand command = new MySqlCommand(query.ToString(), connection);
             command.Parameters.AddWithValue("@quantidadeTrofeus", quantidadeTrofeus);
             command.Parameters.AddWithValue("@idClube", idClube);
-            aqui deve conter mais um parametro
+            command.Parameters.AddWithValue("@patrimonio", patrimonio);
+            command.Parameters.AddWithValue("@nomeClube", nomeClube);
 
             connection.Open();
 
