@@ -8,6 +8,8 @@ using System.Data;
 using System.Diagnostics.Eventing.Reader;
 using System.Runtime.InteropServices;
 using Org.BouncyCastle.Crypto.Digests;
+using Mysqlx.Crud;
+using System.Collections.Generic;
 
 namespace futebol.Controllers
 {
@@ -184,6 +186,38 @@ namespace futebol.Controllers
             {
                 connection.Close();
                 return BadRequest("Clube não foi cadastrado");
+            }
+        }
+
+        [HttpPut("clube/{idClube}")]
+        [ProducesResponseType(typeof(Ok), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BadRequest), (int)HttpStatusCode.BadRequest)]
+        public IActionResult AlterarClube([FromRoute] int idClube, [FromQuery] int quantidadeTrofeus, colocar aqui um parametro novo referente ao patrimonio do clube)
+        {
+            string connectionString = "Server=localhost;Port=3306;Database=sys;Uid=root;Pwd=admin;";
+
+            MySqlConnection connection = new MySqlConnection(connectionString);
+
+            string query = "UPDATE CLUBES SET TROFEUS = @quantidadeTrofeus, aqui deve ser feito a atribuição do patrimonio WHERE ID = @idClube";
+
+            MySqlCommand command = new MySqlCommand(query, connection);
+            command.Parameters.AddWithValue("@quantidadeTrofeus", quantidadeTrofeus);
+            command.Parameters.AddWithValue("@idClube", idClube);
+            aqui deve conter mais um parametro
+
+            connection.Open();
+
+            var linhasAfetas = command.ExecuteNonQuery();
+
+            if (linhasAfetas > 0)
+            {
+                connection.Close();
+                return Ok("Atualização ocorreu com sucesso.");
+            }
+            else
+            {
+                connection.Close();
+                return BadRequest("Não foi atualizado nenhum clube.");
             }
         }
     }
