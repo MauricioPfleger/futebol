@@ -10,6 +10,7 @@ using System.Runtime.InteropServices;
 using Org.BouncyCastle.Crypto.Digests;
 using Mysqlx.Crud;
 using System.Collections.Generic;
+using System.Text;
 
 namespace futebol.Controllers
 {
@@ -168,10 +169,10 @@ namespace futebol.Controllers
 
             string query = $@"INSERT INTO sys.clubes (nome, trofeus, patrimonio) VALUES (@nome, @troufeus, @patrimonio)";
 
-            MySqlCommand command = new MySqlCommand(query, connection); 
+            MySqlCommand command = new MySqlCommand(query, connection);
             command.Parameters.AddWithValue("@nome", clubeRequest.Nome);
             command.Parameters.AddWithValue("@troufeus", clubeRequest.Trofeus);
-            command.Parameters.AddWithValue("@patrimonio", clubeRequest.Patrimonio.ToString().Replace(',', '.'));               
+            command.Parameters.AddWithValue("@patrimonio", clubeRequest.Patrimonio.ToString().Replace(',', '.'));
 
             connection.Open();
 
@@ -192,33 +193,28 @@ namespace futebol.Controllers
         [HttpPut("clube/{idClube}")]
         [ProducesResponseType(typeof(Ok), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BadRequest), (int)HttpStatusCode.BadRequest)]
-        public IActionResult AlterarClube([FromRoute] int idClube, [FromQuery] int quantidadeTrofeus, colocar aqui um parametro novo referente ao patrimonio do clube)
+        public IActionResult AlterarClube([FromRoute] int idClube, [FromQuery] string? nomeClube, int? quantidadeTrofeus, decimal? patrimonio)                             )
         {
             string connectionString = "Server=localhost;Port=3306;Database=sys;Uid=root;Pwd=admin;";
 
-            MySqlConnection connection = new MySqlConnection(connectionString);
+        MySqlConnection connection = new MySqlConnection(connectionString);
 
-            string query = "UPDATE CLUBES SET TROFEUS = @quantidadeTrofeus, aqui deve ser feito a atribuição do patrimonio WHERE ID = @idClube";
+        StringBuilder query = new StringBuilder();
+        query.Append("UPDATE CLUBES  SET");
 
-            MySqlCommand command = new MySqlCommand(query, connection);
-            command.Parameters.AddWithValue("@quantidadeTrofeus", quantidadeTrofeus);
-            command.Parameters.AddWithValue("@idClube", idClube);
-            aqui deve conter mais um parametro
+            bool existeParametroInformado = false;
+         
+        if (!String.IsNullOrEmpty(nomeClube))
+        {
+            query.Append("NOME = @nomeClube");
+            existeParametroInformado = true
 
-            connection.Open();
 
-            var linhasAfetas = command.ExecuteNonQuery();
-
-            if (linhasAfetas > 0)
-            {
-                connection.Close();
-                return Ok("Atualização ocorreu com sucesso.");
             }
-            else
-            {
-                connection.Close();
-                return BadRequest("Não foi atualizado nenhum clube.");
-            }
-        }
-    }
-}
+
+    if (quantidadeTrofeus != null)
+     
+
+
+
+
