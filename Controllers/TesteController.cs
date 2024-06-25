@@ -192,20 +192,32 @@ namespace futebol.Controllers
         [HttpPut("clube/{idClube}")]
         [ProducesResponseType(typeof(Ok), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BadRequest), (int)HttpStatusCode.BadRequest)]
-        public IActionResult AlterarClube([FromRoute] int idClube, [FromQuery] int quantidadeTrofeus, colocar aqui um parametro novo referente ao patrimonio do clube)
+        public IActionResult AlterarClube([FromRoute] int idClube, [FromQuery] string? nomeClube,  int? quantidadeTrofeus, decimal? patrimonio)
         {
             string connectionString = "Server=localhost;Port=3306;Database=sys;Uid=root;Pwd=admin;";
 
             MySqlConnection connection = new MySqlConnection(connectionString);
 
-            string query = "UPDATE CLUBES SET TROFEUS = @quantidadeTrofeus, aqui deve ser feito a atribuição do patrimonio WHERE ID = @idClube";
+            StringBuilder query = new StringBuilder();
+            query.Append("UPDATE CLUBE SET ");
 
-            MySqlCommand command = new MySqlCommand(query, connection);
-            command.Parameters.AddWithValue("@quantidadeTrofeus", quantidadeTrofeus);
-            command.Parameters.AddWithValue("@idClube", idClube);
-            aqui deve conter mais um parametro
+            bool existeParametroInformado = true;
 
-            connection.Open();
+            if (!String.IsNullOrEmpty(nomeClube))
+            {
+                query.Append("nome = @nomeClube");
+                existeParametroInformado = true;
+            }
+            if (quantidadeTrofeus != null)
+            {
+
+                if (existeParametroInformado)
+                {
+
+
+                }
+
+                connection.Open();
 
             var linhasAfetas = command.ExecuteNonQuery();
 
