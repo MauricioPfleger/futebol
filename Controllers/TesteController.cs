@@ -304,6 +304,8 @@ namespace futebol.Controllers
          * 10 - Valor a ser substituido na query
          * 11 - Campo a ser substituido na query
          * 12 - Valor a ser substituido na query
+         * 
+         * Campos do banco de dados: nome, numero, idclube, salario
          */
 
         [HttpPost("jogador")]
