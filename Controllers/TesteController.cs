@@ -10,6 +10,7 @@ using System.Runtime.InteropServices;
 using Org.BouncyCastle.Crypto.Digests;
 using Mysqlx.Crud;
 using System.Collections.Generic;
+using System.Text;
 
 namespace futebol.Controllers
 {
@@ -192,32 +193,57 @@ namespace futebol.Controllers
         [HttpPut("clube/{idClube}")]
         [ProducesResponseType(typeof(Ok), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BadRequest), (int)HttpStatusCode.BadRequest)]
-        public IActionResult AlterarClube([FromRoute] int idClube, [FromQuery] string? nomeClube,  int? quantidadeTrofeus, decimal? patrimonio)
+        public IActionResult AlterarClube([FromRoute] int idClube, [FromQuery] string? nomeClube, int? quantidadeTrofeus, decimal? patrimonio)
         {
             string connectionString = "Server=localhost;Port=3306;Database=sys;Uid=root;Pwd=admin;";
 
             MySqlConnection connection = new MySqlConnection(connectionString);
 
             StringBuilder query = new StringBuilder();
-            query.Append("UPDATE CLUBE SET ");
+            query.Append("UPDATE CLUBES SET ");
 
-            bool existeParametroInformado = true;
+            bool existeParametroInformado = false;
 
             if (!String.IsNullOrEmpty(nomeClube))
             {
-                query.Append("nome = @nomeClube");
+                query.Append("NOME = @nomeClube");
                 existeParametroInformado = true;
             }
+
             if (quantidadeTrofeus != null)
             {
-
                 if (existeParametroInformado)
                 {
-
-
+                    query.Append(",");
                 }
+                query.Append("TROFEUS = @quantidadeTrofeus");
+                existeParametroInformado = true;
+            }
 
-                connection.Open();
+            if (patrimonio != null)
+            {
+                if (existeParametroInformado)
+                {
+                    query.Append(",");
+                }
+                query.Append("PATRIMONIO = @patrimonio");
+                existeParametroInformado = true;
+            }
+
+            if (!existeParametroInformado)
+            {
+                return BadRequest("Nenhum parâmetro foi informado");
+            }
+            
+            query.Append(" WHERE ID = @idClube");
+
+            MySqlCommand command = new MySqlCommand(query.ToString(), connection);
+            command.Parameters.AddWithValue("@quantidadeTrofeus", quantidadeTrofeus);
+            command.Parameters.AddWithValue("@idClube", idClube);
+            command.Parameters.AddWithValue("@patrimonio", patrimonio);
+            command.Parameters.AddWithValue("@nomeClube", nomeClube);
+
+            connection.Open();
 
             var linhasAfetas = command.ExecuteNonQuery();
 
@@ -230,6 +256,91 @@ namespace futebol.Controllers
             {
                 connection.Close();
                 return BadRequest("Não foi atualizado nenhum clube.");
+            }
+        }
+
+        [HttpDelete("clube/{idClube}")]
+        [ProducesResponseType(typeof(Ok), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BadRequest), (int)HttpStatusCode.BadRequest)]
+        public IActionResult ExcluirClubr([FromRoute] int idClube)
+        {
+            string connectionString = "Server=localhost;Port=3306;Database=sys;Uid=root;Pwd=admin;";
+
+            MySqlConnection connection = new MySqlConnection(connectionString);
+
+            string query = "DELETE FROM sys.clubes WHERE id = @idClube";
+
+            MySqlCommand command = new MySqlCommand(query, connection);
+            command.Parameters.AddWithValue("@idClube", idClube);
+
+            connection.Open();
+
+            var linhasAfetas = command.ExecuteNonQuery();
+
+            if (linhasAfetas > 0)
+            {
+                connection.Close();
+                return Ok("Exclusão ocorreu com sucesso.");
+            }
+            else
+            {
+                connection.Close();
+                return BadRequest("Não foi excluído nenhum clube.");
+            }
+        }
+
+        // ------------------- EXERCICIO -----------------------------------------------------
+
+        /*
+         * 1 - É o tipo do parâmetro de entrada, ou a classe que a gente espera receber como informação  
+         * 2 - Tabela que iremos inserir a informação
+         * 3 - Os campos que iremos preencher na tabela
+         * 4 - Os valores que iremos preencher os campos
+         * 5 - Campo a ser substituido na query
+         * 6 - Valor a ser substituido na query
+         * 7 - Campo a ser substituido na query
+         * 8 - Valor a ser substituido na query
+         * 9 - Campo a ser substituido na query
+         * 10 - Valor a ser substituido na query
+         * 11 - Campo a ser substituido na query
+         * 12 - Valor a ser substituido na query
+         * 
+         * Campos do banco de dados: nome, numero, idclube, salario
+         */
+
+        [HttpPost("jogador")]
+        [ProducesResponseType(typeof(Ok), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BadRequest), (int)HttpStatusCode.BadRequest)]
+        public IActionResult InserirJogador([FromBody] /*?1*/ jogadorRequest)
+        {
+            if (String.IsNullOrEmpty(jogadorRequest.Nome))
+                return BadRequest("É necessário informar o nome do jogador.");
+
+            string connectionString = "Server=localhost;Port=3306;Database=sys;Uid=root;Pwd=admin;";
+
+            MySqlConnection connection = new MySqlConnection(connectionString);
+
+            string query = $@"INSERT INTO /*?2*/ (/*?3*/) VALUES (/*?4*/)";
+
+            MySqlCommand command = new MySqlCommand(query, connection);
+            command.Parameters.AddWithValue("/*?5*/", jogadorRequest./*?6*/);
+            command.Parameters.AddWithValue("/*?7*/", jogadorRequest./*?8*/);
+            command.Parameters.AddWithValue("@idclube", jogadorRequest.idClube);
+            command.Parameters.AddWithValue("/*?11*/", jogadorRequest./*?12*/.ToString().Replace(',', '.'));
+
+            connection.Open();
+
+            var linhasAfetas = command.ExecuteNonQuery();
+
+            if (linhasAfetas > 0)
+            {
+                connection.Close();
+                return Ok("Jogador cadastrado com sucesso.");
+            }
+            else
+            {
+                connection.Close();
+                return BadRequest("Jogador não foi cadastrado");
             }
         }
     }
