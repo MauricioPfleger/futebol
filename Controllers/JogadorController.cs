@@ -119,10 +119,46 @@ namespace futebol.Controllers
          * Campos do banco de dados: nome, numero, idclube, salario
          */
 
+        [HttpPost("Informacoes")]
+        [ProducesResponseType(typeof(Ok), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BadRequest), (int)HttpStatusCode.BadRequest)]
+        public IActionResult InserirJogador([FromBody] JogadorRequest jogadorRequest)
+        {
+            if (String.IsNullOrEmpty(jogadorRequest.Nome))
+                return BadRequest("É necessário informar o nome do jogador.");
+
+            string connectionString = "Server=localhost;Port=3306;Database=sys;Uid=root;Pwd=admin;";
+
+            MySqlConnection connection = new MySqlConnection(connectionString);
+
+            string query = $@"INSERT INTO sys.jogadores (nome, numero, idclube, salario) VALUES (@nome, @numero, @idclube, @salario)";
+
+            MySqlCommand command = new MySqlCommand(query, connection);
+            command.Parameters.AddWithValue("@nome", jogadorRequest.Nome);
+            command.Parameters.AddWithValue("@numero", jogadorRequest.Numero);
+            command.Parameters.AddWithValue("@idclube", jogadorRequest.idClube);
+            command.Parameters.AddWithValue("@salario", jogadorRequest.Salario.ToString().Replace(',', '.'));
+
+            connection.Open();
+
+            var linhasAfetas = command.ExecuteNonQuery();
+
+            if (linhasAfetas > 0)
+            {
+                connection.Close();
+                return Ok("Jogador cadastrado com sucesso.");
+            }
+            else
+            {
+                connection.Close();
+                return BadRequest("Jogador não foi cadastrado");
+            }
+        }
+
         [HttpDelete("Informacoes/{idjogador}")]
         [ProducesResponseType(typeof(Ok), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BadRequest), (int)HttpStatusCode.BadRequest)]
-        public IActionResult ExcluirClubr([FromRoute] int idjogador)
+        public IActionResult ExcluirClube([FromRoute] int idjogador)
         {
             string connectionString = "Server=localhost;Port=3306;Database=sys;Uid=root;Pwd=admin;";
 
