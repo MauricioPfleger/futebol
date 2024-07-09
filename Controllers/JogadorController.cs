@@ -154,5 +154,39 @@ namespace futebol.Controllers
                 return BadRequest("Jogador não foi cadastrado");
             }
         }
+
+
+        [HttpPut("Informacoes/{idJogador}")]
+        [ProducesResponseType(typeof(Ok), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BadRequest), (int)HttpStatusCode.BadRequest)]
+        public IActionResult AlterarSalario([FromRoute] int idJogador, [FromQuery] decimal salario)
+        {
+            string connectionString = "Server=localhost;Port=3306;Database=sys;Uid=root;Pwd=admin;";
+
+            MySqlConnection connection = new MySqlConnection(connectionString);
+
+
+            string query = @"UPDATE sys.jogadores SET salario = @salario WHERE id = @idjogador";
+
+            MySqlCommand command = new MySqlCommand(query.ToString(), connection);
+            command.Parameters.AddWithValue("@salario", salario);
+            command.Parameters.AddWithValue("@idjogador", idJogador);
+
+
+            connection.Open();
+
+            var linhasAfetas = command.ExecuteNonQuery();
+
+            if (linhasAfetas > 0)
+            {
+                connection.Close();
+                return Ok("Atualização ocorreu com sucesso.");
+            }
+            else
+            {
+                connection.Close();
+                return BadRequest("Não foi atualizado nenhum clube.");
+            }
+        }
     }
 }
