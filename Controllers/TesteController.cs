@@ -311,7 +311,7 @@ namespace futebol.Controllers
         [HttpPost("jogador")]
         [ProducesResponseType(typeof(Ok), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BadRequest), (int)HttpStatusCode.BadRequest)]
-        public IActionResult InserirJogador([FromBody] /*?1*/ jogadorRequest)
+        public IActionResult InserirJogador([FromBody] JogadorRequest jogadorRequest)
         {
             if (String.IsNullOrEmpty(jogadorRequest.Nome))
                 return BadRequest("É necessário informar o nome do jogador.");
@@ -320,13 +320,13 @@ namespace futebol.Controllers
 
             MySqlConnection connection = new MySqlConnection(connectionString);
 
-            string query = $@"INSERT INTO /*?2*/ (/*?3*/) VALUES (/*?4*/)";
+            string query = $@"INSERT INTO sys.jogadores (nome, numero, idclube, salario) VALUES (@nome, @numero, @idclube, @salario)";
 
             MySqlCommand command = new MySqlCommand(query, connection);
-            command.Parameters.AddWithValue("/*?5*/", jogadorRequest./*?6*/);
-            command.Parameters.AddWithValue("/*?7*/", jogadorRequest./*?8*/);
+            command.Parameters.AddWithValue("@nome", jogadorRequest.Nome);
+            command.Parameters.AddWithValue("@numero", jogadorRequest.Numero);
             command.Parameters.AddWithValue("@idclube", jogadorRequest.idClube);
-            command.Parameters.AddWithValue("/*?11*/", jogadorRequest./*?12*/.ToString().Replace(',', '.'));
+            command.Parameters.AddWithValue("@salario", jogadorRequest.Salario.ToString().Replace(',', '.'));
 
             connection.Open();
 
