@@ -189,19 +189,72 @@ namespace futebol.Controllers
         [HttpPut("Informacoes/{idJogador}")]
         [ProducesResponseType(typeof(Ok), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BadRequest), (int)HttpStatusCode.BadRequest)]
-        public IActionResult AlterarSalario([FromRoute] int idJogador, [FromQuery] decimal salario)
+        public IActionResult AlterarSalario([FromRoute] int idJogador, [FromQuery] int? numero, int? idClube, decimal? salario)
         {
+            if (
+                (numero == null || numero == 0) &&              
+                (idClube == null || idClube == 0) && 
+                (salario == null || salario == 0)
+               )
+            {
+                return BadRequest("Não foi informado nenhuma informação para ser atualizada");
+            }
+
             string connectionString = "Server=localhost;Port=3306;Database=sys;Uid=root;Pwd=admin;";
 
             MySqlConnection connection = new MySqlConnection(connectionString);
 
+            StringBuilder comandoTexto = new StringBuilder();
+            comandoTexto.Append("UPDATE sys.jogadores SET ");
+            
+            bool existeParametroAnterior = false;
 
-            string query = @"UPDATE sys.jogadores SET salario = @salario WHERE id = @idjogador";
+            if (numero != null && numero > 0)
+            {
+                comandoTexto.Append("numero = @numero");
+                existeParametroAnterior = true;
+            }
 
-            MySqlCommand command = new MySqlCommand(query.ToString(), connection);
-            command.Parameters.AddWithValue("@salario", salario);
+            if (idClube != null && idClube > 0)
+            {
+                if (existeParametroAnterior)
+                {
+                    comandoTexto.Append(", ");
+                }
+                else
+                {
+                    existeParametroAnterior = true;
+                }
+
+                comandoTexto.Append("idclube = @idClube");
+            }
+
+            if (salario != null && salario > 0)
+            {
+                if (existeParametroAnterior)
+                {
+                    comandoTexto.Append(", ");
+                }
+
+                comandoTexto.Append("salario = @salario");
+            }
+
+            comandoTexto.Append(" WHERE id = @idjogador");
+
+            MySqlCommand command = new MySqlCommand(comandoTexto.ToString(), connection);
             command.Parameters.AddWithValue("@idjogador", idJogador);
-
+            if (numero != null && numero > 0)
+            {
+                command.Parameters.AddWithValue("@numero", numero);
+            }
+            if (idClube != null && idClube > 0)
+            {
+                command.Parameters.AddWithValue("@idClube", idClube);
+            }
+            if (salario != null && salario > 0)
+            {            
+                command.Parameters.AddWithValue("@salario", salario);
+            }
 
             connection.Open();
 
